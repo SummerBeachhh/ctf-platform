@@ -31,6 +31,9 @@ public interface UserMapper {
     @Update("UPDATE users SET is_vip = #{isVip} WHERE id = #{id}")
     void updateVip(Integer id, Boolean isVip);
 
+    @Update("UPDATE users SET username = #{username}, role = #{role}, score = #{score}, is_vip = #{isVip}, password = #{password} WHERE id = #{id}")
+    void update(User user);
+
     @Update("UPDATE users SET score = score + #{points} WHERE id = #{id}")
     void addScore(Integer id, Integer points);
 

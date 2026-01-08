@@ -390,6 +390,7 @@ async function loadUsers() {
                     </button>
                 </td>
                 <td>
+                    <button class="btn-edit" onclick="openEditUserModal(${u.id})">编辑</button>
                     <button class="btn-danger" onclick="deleteUser(${u.id})">删除</button>
                 </td>
             </tr>
@@ -422,6 +423,63 @@ async function deleteUser(id) {
     if(!confirm('确定要删除该用户吗？')) return;
     await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
     loadUsers();
+}
+
+async function openEditUserModal(id) {
+    const res = await fetch(`/api/admin/users/${id}`);
+    const result = await res.json();
+    
+    if (result.success) {
+        const u = result.data;
+        document.getElementById('edit-u-id').value = u.id;
+        document.getElementById('edit-u-username').value = u.username;
+        document.getElementById('edit-u-password').value = ''; // Don't show password
+        document.getElementById('edit-u-role').value = u.role;
+        document.getElementById('edit-u-score').value = u.score;
+        document.getElementById('edit-u-isvip').checked = u.isVip || false;
+        
+        openModal('editUserModal');
+    } else {
+        alert(result.message);
+    }
+}
+
+async function updateUser() {
+    const id = document.getElementById('edit-u-id').value;
+    const username = document.getElementById('edit-u-username').value;
+    const password = document.getElementById('edit-u-password').value;
+    const role = document.getElementById('edit-u-role').value;
+    const score = document.getElementById('edit-u-score').value;
+    const isVip = document.getElementById('edit-u-isvip').checked;
+    
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('role', role);
+    formData.append('score', score);
+    formData.append('isVip', isVip);
+    
+    if (password) {
+        formData.append('password', password);
+    }
+    
+    try {
+        const response = await fetch(`/api/admin/users/${id}`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            alert('用户更新成功！');
+            closeModal('editUserModal');
+            loadUsers();
+        } else {
+            alert('用户更新失败: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Update error:', error);
+        alert('更新失败，请检查网络。');
+    }
 }
 
 async function loadChallenges() {

@@ -64,6 +64,63 @@ public class AdminController {
         return result;
     }
 
+    @GetMapping("/users/{id}")
+    public Map<String, Object> getUser(@PathVariable Integer id, HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        if (!isAdmin(session)) {
+            result.put("success", false);
+            result.put("message", "未授权");
+            return result;
+        }
+        User user = userMapper.findById(id);
+        if (user == null) {
+            result.put("success", false);
+            result.put("message", "用户不存在");
+            return result;
+        }
+        result.put("success", true);
+        result.put("data", user);
+        return result;
+    }
+
+    @PostMapping("/users/{id}")
+    public Map<String, Object> updateUser(
+            @PathVariable Integer id,
+            @RequestParam("username") String username,
+            @RequestParam("role") String role,
+            @RequestParam("score") Integer score,
+            @RequestParam("isVip") Boolean isVip,
+            @RequestParam(value = "password", required = false) String password,
+            HttpSession session) {
+        
+        Map<String, Object> result = new HashMap<>();
+        if (!isAdmin(session)) {
+            result.put("success", false);
+            result.put("message", "未授权");
+            return result;
+        }
+
+        User user = userMapper.findById(id);
+        if (user == null) {
+            result.put("success", false);
+            result.put("message", "用户不存在");
+            return result;
+        }
+
+        user.setUsername(username);
+        user.setRole(role);
+        user.setScore(score);
+        user.setIsVip(isVip);
+        
+        if (password != null && !password.isEmpty()) {
+            user.setPassword(password);
+        }
+
+        userMapper.update(user);
+        result.put("success", true);
+        return result;
+    }
+
     @PostMapping("/challenges")
     public Map<String, Object> addChallenge(
             @RequestParam("title") String title,

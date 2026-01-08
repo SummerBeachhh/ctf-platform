@@ -270,17 +270,35 @@
             <input type="text" id="edit-c-flag" placeholder="Flag" autocomplete="off">
             <input type="number" id="edit-c-points" placeholder="分数" autocomplete="off">
             <select id="edit-c-cat">
-                <option value="1">WEB</option>
-                <option value="2">PWN</option>
-                <option value="3">REVERSE</option>
-                <option value="4">CRYPTO</option>
-                <option value="5">MISC</option>
+                <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}">Category</option>
             </select>
             <label><input type="checkbox" id="edit-c-isvip"> VIP 专属题目</label>
             <div id="edit-c-current-attachment" style="margin: 10px 0; font-size: 0.9em; color: #666;"></div>
             <label style="display:block; margin-bottom:5px;"><input type="checkbox" id="edit-c-delete-attachment"> 删除当前附件</label>
             <input type="file" id="edit-c-file" style="margin-top: 10px; margin-bottom: 10px;">
             <button class="btn-full" onclick="updateChallenge()">保存修改</button>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editUserModal')">&times;</span>
+            <h3>编辑用户</h3>
+            <input type="hidden" id="edit-u-id">
+            <label>用户名:</label>
+            <input type="text" id="edit-u-username" placeholder="用户名" autocomplete="off">
+            <label>密码 (留空不修改):</label>
+            <input type="password" id="edit-u-password" placeholder="密码" autocomplete="new-password">
+            <label>角色:</label>
+            <select id="edit-u-role">
+                <option value="USER">USER</option>
+                <option value="ADMIN">ADMIN</option>
+            </select>
+            <label>分数:</label>
+            <input type="number" id="edit-u-score" placeholder="分数" autocomplete="off">
+            <label><input type="checkbox" id="edit-u-isvip"> VIP 用户</label>
+            <button class="btn-full" onclick="updateUser()">保存修改</button>
         </div>
     </div>
 
