@@ -9,6 +9,31 @@
         ORDER BY c.sort_order DESC, c.id ASC
     </select>
 
+    <select id="countAll" resultType="int">
+        SELECT count(*) FROM challenge
+    </select>
+
+    <select id="findPage" resultType="com.ctf.platform.entity.Challenge">
+        SELECT c.*, cat.name as categoryName 
+        FROM challenge c 
+        LEFT JOIN category cat ON c.category_id = cat.id
+        ORDER BY c.sort_order DESC, c.id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countByCategoryId" resultType="int">
+        SELECT count(*) FROM challenge WHERE category_id = #{categoryId}
+    </select>
+
+    <select id="findPageByCategoryId" resultType="com.ctf.platform.entity.Challenge">
+        SELECT c.*, cat.name as categoryName 
+        FROM challenge c 
+        LEFT JOIN category cat ON c.category_id = cat.id
+        WHERE c.category_id = #{categoryId}
+        ORDER BY c.sort_order DESC, c.id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
     <select id="findAllCategories" resultType="com.ctf.platform.entity.Category">
         SELECT * FROM category
     </select>

@@ -31,6 +31,28 @@ public class ChallengeServiceImpl implements ChallengeService {
     }
 
     @Override
+    public List<Challenge> getChallengesByPage(int page, int size) {
+        int offset = (page - 1) * size;
+        return challengeMapper.findPage(offset, size);
+    }
+
+    @Override
+    public int getTotalChallenges() {
+        return challengeMapper.countAll();
+    }
+
+    @Override
+    public List<Challenge> getChallengesByCategoryPage(int categoryId, int page, int size) {
+        int offset = (page - 1) * size;
+        return challengeMapper.findPageByCategoryId(categoryId, offset, size);
+    }
+
+    @Override
+    public int getTotalChallengesByCategory(int categoryId) {
+        return challengeMapper.countByCategoryId(categoryId);
+    }
+
+    @Override
     public List<Category> getAllCategories() {
         return challengeMapper.findAllCategories();
     }
@@ -53,16 +75,13 @@ public class ChallengeServiceImpl implements ChallengeService {
             return false;
         }
 
-        boolean isCorrect = challenge.getFlag().trim().equals(flag.trim());
-
         // Check if already solved BEFORE inserting the new submission
-        boolean alreadySolved = false;
-        if (isCorrect) {
-            List<Submission> previousSolves = submissionMapper.findCorrectByUserIdAndChallengeId(userId, challengeId);
-            if (!previousSolves.isEmpty()) {
-                alreadySolved = true;
-            }
+        List<Submission> previousSolves = submissionMapper.findCorrectByUserIdAndChallengeId(userId, challengeId);
+        if (!previousSolves.isEmpty()) {
+            throw new RuntimeException("您已完成该题目，无法重复提交！");
         }
+
+        boolean isCorrect = challenge.getFlag().trim().equals(flag.trim());
 
         // Record Submission
         Submission submission = new Submission();
@@ -71,11 +90,16 @@ public class ChallengeServiceImpl implements ChallengeService {
         submission.setIsCorrect(isCorrect);
         submissionMapper.insert(submission);
 
-        // Add points if correct and first time
-        if (isCorrect && !alreadySolved) {
+        // Add points if correct
+        if (isCorrect) {
             userMapper.addScore(userId, challenge.getPoints());
         }
 
         return isCorrect;
+    }
+
+    @Override
+    public List<Integer> getSolvedChallengeIds(Integer userId) {
+        return submissionMapper.findSolvedChallengeIdsByUserId(userId);
     }
 }

@@ -10,7 +10,7 @@ import java.util.List;
 
 @Mapper
 public interface UserMapper {
-    @Select("SELECT * FROM users ORDER BY score DESC")
+    @Select("SELECT * FROM users ORDER BY score DESC LIMIT 5")
     List<User> getRankings();
 
     @Select("SELECT * FROM users")
@@ -22,11 +22,14 @@ public interface UserMapper {
     @Select("SELECT * FROM users WHERE username = #{username}")
     User findByUsername(String username);
 
-    @Insert("INSERT INTO users (username, password, role, score, is_vip) VALUES (#{username}, #{password}, #{role}, 0, false)")
+    @Insert("INSERT INTO users (username, password, role, score, is_vip, oauth_provider) VALUES (#{username}, #{password}, #{role}, #{score}, #{isVip}, #{oauthProvider})")
     void insert(User user);
 
     @Update("UPDATE users SET is_vip = true WHERE id = #{id}")
     void upgradeToVip(Integer id);
+
+    @Update("UPDATE users SET is_vip = #{isVip} WHERE id = #{id}")
+    void updateVip(Integer id, Boolean isVip);
 
     @Update("UPDATE users SET score = score + #{points} WHERE id = #{id}")
     void addScore(Integer id, Integer points);

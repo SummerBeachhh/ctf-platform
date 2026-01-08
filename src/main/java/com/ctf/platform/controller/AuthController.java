@@ -52,6 +52,8 @@ public class AuthController {
         user.setUsername(username);
         user.setPassword(password);
         user.setRole("USER");
+        user.setScore(0);
+        user.setIsVip(false);
         userMapper.insert(user);
 
         result.put("success", true);

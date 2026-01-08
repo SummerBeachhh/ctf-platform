@@ -15,4 +15,7 @@ public interface SubmissionMapper {
 
     @Select("SELECT * FROM submission WHERE user_id = #{userId} AND challenge_id = #{challengeId} AND is_correct = TRUE")
     List<Submission> findCorrectByUserIdAndChallengeId(Integer userId, Integer challengeId);
+
+    @Select("SELECT DISTINCT challenge_id FROM submission WHERE user_id = #{userId} AND is_correct = TRUE")
+    List<Integer> findSolvedChallengeIdsByUserId(Integer userId);
 }

@@ -1,1 +1,26 @@
 /target/
+# 默认忽略的文件
+/shelf/
+/workspace.xml
+# 基于编辑器的 HTTP 客户端请求
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+/src/main/resources/application-dev.properties
+/src/main/resources/application-prod.properties
+/.idea/
+
+# IDE 配置文件
+*.iml
+
+# 运行时目录 (上传文件和缓存)
+/uploads/
+/cache/
+
+# 日志文件
+*.log
+
+# 操作系统文件
+.DS_Store
+Thumbs.db

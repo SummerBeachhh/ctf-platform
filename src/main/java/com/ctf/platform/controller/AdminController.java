@@ -51,6 +51,19 @@ public class AdminController {
         return result;
     }
 
+    @PostMapping("/users/{id}/vip")
+    public Map<String, Object> toggleUserVip(@PathVariable Integer id, @RequestParam Boolean isVip, HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        if (!isAdmin(session)) {
+            result.put("success", false);
+            result.put("message", "未授权");
+            return result;
+        }
+        userMapper.updateVip(id, isVip);
+        result.put("success", true);
+        return result;
+    }
+
     @PostMapping("/challenges")
     public Map<String, Object> addChallenge(
             @RequestParam("title") String title,
@@ -58,6 +71,7 @@ public class AdminController {
             @RequestParam("flag") String flag,
             @RequestParam("points") Integer points,
             @RequestParam("categoryId") Integer categoryId,
+            @RequestParam(value = "isVip", defaultValue = "false") Boolean isVip,
             @RequestParam(value = "file", required = false) MultipartFile file,
             HttpSession session) {
         
@@ -74,6 +88,7 @@ public class AdminController {
         challenge.setFlag(flag);
         challenge.setPoints(points);
         challenge.setCategoryId(categoryId);
+        challenge.setIsVip(isVip);
 
         if (file != null && !file.isEmpty()) {
             try {
@@ -145,10 +160,17 @@ public class AdminController {
         return result;
     }
 
-    @PutMapping("/challenges/{id}")
+    @PostMapping("/challenges/{id}")
     public Map<String, Object> updateChallenge(
             @PathVariable Integer id,
-            @RequestBody Map<String, Object> payload,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam("flag") String flag,
+            @RequestParam("points") Integer points,
+            @RequestParam("categoryId") Integer categoryId,
+            @RequestParam(value = "isVip", defaultValue = "false") Boolean isVip,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "deleteAttachment", defaultValue = "false") Boolean deleteAttachment,
             HttpSession session) {
         
         Map<String, Object> result = new HashMap<>();
@@ -165,22 +187,38 @@ public class AdminController {
             return result;
         }
 
-        challenge.setTitle((String) payload.get("title"));
-        challenge.setDescription((String) payload.get("description"));
-        challenge.setFlag((String) payload.get("flag"));
-        // Handle points as Integer (JSON numbers might be Integer or Double)
-        Object pointsObj = payload.get("points");
-        if (pointsObj instanceof Integer) {
-            challenge.setPoints((Integer) pointsObj);
-        } else if (pointsObj instanceof String) {
-            challenge.setPoints(Integer.parseInt((String) pointsObj));
+        challenge.setTitle(title);
+        challenge.setDescription(description);
+        challenge.setFlag(flag);
+        challenge.setPoints(points);
+        challenge.setCategoryId(categoryId);
+        challenge.setIsVip(isVip);
+
+        // Handle attachment deletion
+        if (deleteAttachment) {
+            challenge.setAttachmentUrl(null);
+            // Optionally delete the file from disk, but for now just clear the URL
         }
-        
-        Object catObj = payload.get("categoryId");
-        if (catObj instanceof Integer) {
-            challenge.setCategoryId((Integer) catObj);
-        } else if (catObj instanceof String) {
-            challenge.setCategoryId(Integer.parseInt((String) catObj));
+
+        // Handle new file upload
+        if (file != null && !file.isEmpty()) {
+            try {
+                // Use absolute path
+                String projectRoot = System.getProperty("user.dir");
+                String uploadDir = projectRoot + File.separator + "uploads" + File.separator;
+                File dir = new File(uploadDir);
+                if (!dir.exists()) dir.mkdirs();
+
+                String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+                File dest = new File(dir, fileName);
+                file.transferTo(dest);
+                challenge.setAttachmentUrl("/uploads/" + fileName);
+            } catch (IOException e) {
+                e.printStackTrace();
+                result.put("success", false);
+                result.put("message", "文件上传失败: " + e.getMessage());
+                return result;
+            }
         }
 
         challengeMapper.update(challenge);

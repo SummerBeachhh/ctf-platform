@@ -7,7 +7,15 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f0f0f0; /* 恢复浅灰色背景 */
+    /* 优化后的网格背景 */
+    background-image: 
+        linear-gradient(#e0e0e0 1px, transparent 1px),
+        linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-position: center top;
+    background-attachment: fixed; /* 背景固定，不随滚动条移动 */
     margin: 0;
+    min-height: 100vh;
     padding: 0;
     color: #333; /* 恢复深色文字 */
     font-size: 18px; /* 保持放大字体 */
@@ -22,6 +30,43 @@ header {
     text-transform: uppercase;
     letter-spacing: 5px;
     position: relative;
+    /* overflow: hidden;  不需要了，控制台在左上角 */
+    min-height: 150px;
+}
+
+/* 老式控制台动画样式 */
+.retro-console {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 400px;
+    height: 100%;
+    padding: 15px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    color: #00ff00;
+    text-align: left;
+    line-height: 1.5;
+    letter-spacing: 0;
+    text-transform: none;
+    pointer-events: none; /* 确保鼠标穿透 */
+    z-index: 0; /* 降低层级，确保在背景之上但在按钮之下 */
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+    white-space: pre-wrap;
+    overflow: hidden;
+    opacity: 0.6; /* 稍微降低透明度，避免抢眼 */
+}
+
+/* 确保 Header 内容在控制台之上 */
+header h1, .user-controls {
+    position: relative;
+    z-index: 2; /* 确保高于控制台 */
+}
+
+header h1 {
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 4px 8px rgba(0,0,0,0.8); /* 增强文字可读性 */
 }
 
 .user-controls {
@@ -30,6 +75,7 @@ header {
     right: 30px;
     font-size: 14px;
     letter-spacing: 1px;
+    z-index: 1; /* 确保在 Canvas 之上 */
 }
 
 .user-controls a {
@@ -107,6 +153,13 @@ header {
     border: 3px solid #1a1a1a;
     margin-bottom: 30px;
     padding: 30px;
+    transition: border-color 0.3s;
+}
+
+.challenge-card.solved {
+    border-color: #28a745;
+    background: #f0fff4; /* 非常淡的绿色背景 */
+    position: relative;
 }
 
 .challenge-header {
@@ -123,6 +176,25 @@ header {
     font-weight: bold;
     margin: 0;
     color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 新设计的已完成标记 */
+.solved-badge {
+    display: inline-block;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.7em;
+    color: #28a745;
+    border: 2px solid #28a745;
+    padding: 2px 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+    transform: rotate(-5deg); /* 稍微倾斜，像印章 */
+    background: rgba(40, 167, 69, 0.1);
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.2);
 }
 
 .points-badge {
@@ -155,6 +227,15 @@ input[type="text"], input[type="password"], input[type="number"], textarea, sele
     margin-bottom: 10px;
 }
 
+/* 禁用状态的输入框 */
+input:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    border-color: #ced4da;
+    font-style: italic;
+}
+
 button {
     padding: 0 30px; /* Use 0 vertical padding and let flex center it, or match input padding */
     background-color: #007bff;
@@ -183,6 +264,21 @@ button:hover {
     background-color: #0056b3;
     transform: translateY(-2px);
     box-shadow: 2px 2px 0 #000;
+}
+
+/* 禁用状态的按钮 */
+button:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.challenge-card.solved button:disabled {
+    background-color: #28a745; /* 已完成的按钮保持绿色 */
+    border-color: #28a745;
+    opacity: 0.8;
 }
 
 /* 排行榜 */
@@ -232,6 +328,29 @@ button:hover {
     box-shadow: 2px 2px 0 #000;
 }
 
+.btn-github {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 10px;
+    text-align: center;
+    background: #24292e;
+    color: white;
+    text-decoration: none;
+    border: 2px solid #1a1a1a;
+    font-weight: bold;
+    transition: all 0.2s;
+    margin-top: 15px;
+}
+
+.btn-github:hover {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0 #000;
+}
+
 .btn-recharge {
     background: #28a745;
     border: 2px solid #1a1a1a;
@@ -257,16 +376,41 @@ button:hover {
 .message.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
 
 /* Modal Styles */
+@keyframes modalBackdropFade {
+    from { background-color: rgba(0,0,0,0); }
+    to { background-color: rgba(0,0,0,0.8); }
+}
+
+@keyframes modalContentSnap {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(-30px);
+        border-color: #fff;
+        box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+    }
+    50% {
+        border-color: #007bff;
+        box-shadow: 0 0 20px rgba(0, 123, 255, 0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        border-color: #007bff;
+        box-shadow: none;
+    }
+}
+
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
     left: 0;
     top: 0;
-    width: 100%;
-    height: 100%;
+    width: 100%; 
+    height: 100%; 
     background-color: rgba(0,0,0,0.8);
     overflow-y: auto;
+    animation: modalBackdropFade 0.3s ease-out;
 }
 
 .modal-content {
@@ -277,6 +421,7 @@ button:hover {
     width: 50%;
     max-width: 600px;
     position: relative;
+    animation: modalContentSnap 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .close {
@@ -378,4 +523,36 @@ button:hover {
 .attachment-link:hover {
     text-decoration: underline;
     color: #0056b3;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    gap: 10px;
+}
+
+.pagination a, .pagination span.current {
+    display: inline-block;
+    padding: 10px 15px;
+    border: 3px solid #1a1a1a;
+    background: white;
+    color: #1a1a1a;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.pagination a:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0 #000;
+}
+
+.pagination span.current {
+    background: #1a1a1a;
+    color: white;
+    cursor: default;
 }

@@ -12,7 +12,11 @@ public class Challenge {
     private String flag;
     private String attachmentUrl;
     private Integer sortOrder;
+    private Boolean isVip; // 是否为 VIP 题目
     
     // 关联字段
     private String categoryName;
+    
+    // 非数据库字段，用于前端展示用户完成状态
+    private Boolean isSolved;
 }

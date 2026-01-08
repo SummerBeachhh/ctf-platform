@@ -22,11 +22,43 @@ public class ChallengeController {
     private com.ctf.platform.mapper.UserMapper userMapper;
 
     @GetMapping("/")
-    public String index(Model model) {
-        model.addAttribute("challenges", challengeService.getAllChallenges());
+    public String index(Model model, jakarta.servlet.http.HttpSession session, @RequestParam(defaultValue = "1") int page) {
+        com.ctf.platform.entity.User user = (com.ctf.platform.entity.User) session.getAttribute("user");
+        
+        int pageSize = 5;
+        List<Challenge> challenges = challengeService.getChallengesByPage(page, pageSize);
+        processChallenges(challenges, user);
+
+        int totalChallenges = challengeService.getTotalChallenges();
+        int totalPages = (int) Math.ceil((double) totalChallenges / pageSize);
+
+        model.addAttribute("challenges", challenges);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
         model.addAttribute("categories", challengeService.getAllCategories());
         model.addAttribute("rankings", userMapper.getRankings());
         return "index";
+    }
+
+    private void processChallenges(List<Challenge> challenges, com.ctf.platform.entity.User user) {
+        boolean isVip = user != null && Boolean.TRUE.equals(user.getIsVip());
+        List<Integer> solvedIds = (user != null) ? challengeService.getSolvedChallengeIds(user.getId()) : java.util.Collections.emptyList();
+
+        for (Challenge c : challenges) {
+            // 清除 flag，避免泄露
+            c.setFlag(null);
+            
+            if (Boolean.TRUE.equals(c.getIsVip()) && !isVip) {
+                c.setDescription("此内容仅限 VIP 会员查看。加入 VIP 解锁更多精彩题目！");
+                c.setAttachmentUrl(null);
+            }
+
+            if (solvedIds.contains(c.getId())) {
+                c.setIsSolved(true);
+            } else {
+                c.setIsSolved(false);
+            }
+        }
     }
 
     @PostMapping("/api/recharge")
@@ -48,26 +80,83 @@ public class ChallengeController {
 
     @GetMapping("/api/challenges")
     @ResponseBody
-    public List<Challenge> getChallenges(@RequestParam(required = false) Integer categoryId) {
+    public Map<String, Object> getChallenges(@RequestParam(required = false) Integer categoryId, 
+                                             @RequestParam(defaultValue = "1") int page,
+                                             @RequestParam(defaultValue = "5") int size,
+                                             jakarta.servlet.http.HttpSession session) {
+        com.ctf.platform.entity.User user = (com.ctf.platform.entity.User) session.getAttribute("user");
+
+        List<Challenge> challenges;
+        int totalChallenges;
+        
         if (categoryId != null) {
-            return challengeService.getChallengesByCategory(categoryId);
+            challenges = challengeService.getChallengesByCategoryPage(categoryId, page, size);
+            totalChallenges = challengeService.getTotalChallengesByCategory(categoryId);
+        } else {
+            challenges = challengeService.getChallengesByPage(page, size);
+            totalChallenges = challengeService.getTotalChallenges();
         }
-        return challengeService.getAllChallenges();
+        
+        int totalPages = (int) Math.ceil((double) totalChallenges / size);
+
+        processChallenges(challenges, user);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("challenges", challenges);
+        result.put("totalPages", totalPages);
+        result.put("currentPage", page);
+        
+        return result;
     }
 
     @PostMapping("/api/verify")
     @ResponseBody
-    public Map<String, Object> verify(@RequestBody Map<String, Object> payload) {
+    public Map<String, Object> verify(@RequestBody Map<String, Object> payload, jakarta.servlet.http.HttpSession session) {
         Integer id = Integer.parseInt(payload.get("id").toString());
         String flag = (String) payload.get("flag");
-        // Default to user ID 1 if not provided (for demo/basic version)
-        Integer userId = payload.containsKey("userId") ? Integer.parseInt(payload.get("userId").toString()) : 1;
         
-        boolean success = challengeService.verifyFlag(id, flag, userId);
+        com.ctf.platform.entity.User user = (com.ctf.platform.entity.User) session.getAttribute("user");
+        Integer userId;
         
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", success);
-        result.put("message", success ? "Flag 正确！积分已添加。" : "Flag 错误，请重试。");
-        return result;
+        if (user != null) {
+            userId = user.getId();
+        } else if (payload.containsKey("userId")) {
+            // Fallback for demo/testing without login
+            userId = Integer.parseInt(payload.get("userId").toString());
+        } else {
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", false);
+            result.put("message", "请先登录！");
+            return result;
+        }
+
+        // Check VIP permission
+        Challenge challenge = challengeService.getChallengeById(id);
+        if (challenge != null && Boolean.TRUE.equals(challenge.getIsVip())) {
+             // Reload user to check latest VIP status
+             if (user != null) {
+                 user = userMapper.findById(user.getId());
+             }
+             if (user == null || !Boolean.TRUE.equals(user.getIsVip())) {
+                 Map<String, Object> result = new HashMap<>();
+                 result.put("success", false);
+                 result.put("message", "此题目仅限 VIP 会员挑战！");
+                 return result;
+             }
+        }
+        
+        try {
+            boolean success = challengeService.verifyFlag(id, flag, userId);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", success);
+            result.put("message", success ? "Flag 正确！积分已添加。" : "Flag 错误，请重试。");
+            return result;
+        } catch (RuntimeException e) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return result;
+        }
     }
 }

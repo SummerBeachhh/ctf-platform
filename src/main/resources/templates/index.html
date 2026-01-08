@@ -2,12 +2,13 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>CTF 专业平台 - 硬核风格</title>
+    <title>CTF 挑战终端</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
     <header>
-        <h1>CTF 精英挑战终端</h1>
+        <div id="retro-console" class="retro-console">C:\> SYSTEM_INIT...</div>
+        <h1>CTF 大师挑战终端</h1>
         <div class="user-controls" id="auth-controls">
             <!-- Content filled by JS -->
             <a href="javascript:void(0)" onclick="openModal('loginModal')">登录</a>
@@ -33,50 +34,85 @@
         <!-- 中间：题目列表 -->
         <main class="main-content">
             <div id="challenge-list">
-                <div th:each="c : ${challenges}" class="challenge-card" th:id="'challenge-' + ${c.id}">
-                    <div class="challenge-header">
-                        <h4 class="challenge-title" th:text="${c.title}">Title</h4>
-                        <div class="challenge-meta">
-                            <span class="points-badge" th:text="${c.points} + ' 分'">100 PTS</span>
-                        </div>
-                    </div>
-                    <p class="challenge-desc" th:text="${c.description}">Description</p>
+                <div th:each="c : ${challenges}" 
+                     th:class="'challenge-card ' + (${c.isSolved} ? 'solved' : '')" 
+                     th:id="'challenge-' + ${c.id}"
+                     th:style="${c.isVip ? 'position: relative; overflow: hidden; border: 1px solid gold; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);' : 'position: relative; overflow: hidden;'}">
                     
-                    <!-- Attachment Logic -->
-                    <div th:if="${c.attachmentUrl != null}">
-                        <div th:if="${c.attachmentUrl.matches('(?i).*\.(jpg|jpeg|png|gif|webp)$')}" 
-                             class="attachment-box">
-                            <img th:src="@{'/api/thumbnail/' + ${c.attachmentUrl.substring(c.attachmentUrl.lastIndexOf('/') + 1)}}" 
-                                 alt="Attachment Thumbnail" class="attachment-thumb" loading="lazy" 
-                                 th:data-url="${c.attachmentUrl}" onclick="window.open(this.getAttribute('data-url'))" 
-                                 onerror="this.onerror=null;this.src=this.getAttribute('data-url')">
-                            <a th:href="@{${c.attachmentUrl}}" target="_blank" class="attachment-link">[查看原图]</a>
-                        </div>
-                        <p><a th:href="@{${c.attachmentUrl}}" target="_blank" class="attachment-link" download>[下载附件]</a></p>
+                    <!-- VIP Overlay -->
+                    <div th:if="${c.isVip && (session.user == null || !session.user.isVip)}"
+                         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+                                background: rgba(0,0,0,0.6); display: flex; flex-direction: column;
+                                align-items: center; justify-content: center; z-index: 10; color: #fff;">
+                        <h3 style="color: gold; text-shadow: 0 0 10px gold;">VIP 专属题目</h3>
+                        <p>仅限会员查看和挑战</p>
+                        <button onclick="recharge()" style="margin-top: 10px; background: gold; color: #000; border: none; padding: 5px 10px; cursor: pointer;">立即升级</button>
                     </div>
 
-                    <!-- Web Challenge Launch Button -->
-                    <div th:with="webUrl=${c.title.contains('SQL 注入') ? '/challenge/web/sqli' : (c.title.contains('Cookie 伪造') ? '/challenge/web/cookie' : (c.title.contains('机器人协议') ? '/robots.txt' : null))}">
-                        <div th:if="${webUrl != null}" style="margin-top:10px; margin-bottom: 10px;">
-                            <a th:href="@{${webUrl}}" target="_blank" style="display:inline-block; padding:8px 15px; background:#00ff00; color:#000; text-decoration:none; font-weight:bold; border: 1px solid #000; box-shadow: 2px 2px 0 #004400;">
-                                ⚡ 启动靶机 (Launch Instance)
-                            </a>
+                    <div th:style="${c.isVip && (session.user == null || !session.user.isVip) ? 'filter: blur(8px); user-select: none;' : ''}">
+                        <div class="challenge-header">
+                            <h4 class="challenge-title">
+                                <span th:text="${c.title}">Title</span>
+                                <span th:if="${c.isVip}" style="color: gold; font-size: 0.8em; border: 1px solid gold; padding: 0 4px; border-radius: 4px;">VIP</span>
+                                <span th:if="${c.isSolved}" class="solved-badge">[ SYSTEM: SOLVED ]</span>
+                            </h4>
+                            <div class="challenge-meta">
+                                <span class="points-badge" th:text="${c.points} + ' 分'">100 PTS</span>
+                            </div>
                         </div>
-                    </div>
+                        <p class="challenge-desc" th:text="${c.description}">Description</p>
+                        
+                        <!-- Attachment Logic -->
+                        <div th:if="${c.attachmentUrl != null}">
+                            <div th:if="${c.attachmentUrl.matches('(?i).*\.(jpg|jpeg|png|gif|webp)$')}" 
+                                 class="attachment-box">
+                                <img th:src="@{'/api/thumbnail/' + ${c.attachmentUrl.substring(c.attachmentUrl.lastIndexOf('/') + 1)}}" 
+                                     alt="Attachment Thumbnail" class="attachment-thumb" loading="lazy" 
+                                     th:data-url="${c.attachmentUrl}" onclick="window.open(this.getAttribute('data-url'))" 
+                                     onerror="this.onerror=null;this.src=this.getAttribute('data-url')">
+                                <a th:href="@{${c.attachmentUrl}}" target="_blank" class="attachment-link">[查看原图]</a>
+                            </div>
+                            <p><a th:href="@{${c.attachmentUrl}}" target="_blank" class="attachment-link" download>[下载附件]</a></p>
+                        </div>
 
-                    <div class="flag-input-group">
-                        <input type="text" placeholder="请输入 FLAG{...}" th:id="'input-' + ${c.id}">
-                        <button th:onclick="'submitFlag(' + ${c.id} + ')'">提交</button>
+                        <!-- Web Challenge Launch Button -->
+                        <div th:with="webUrl=${c.title.contains('SQL 注入') ? '/challenge/web/sqli' : (c.title.contains('Cookie 伪造') ? '/challenge/web/cookie' : (c.title.contains('机器人协议') ? '/robots.txt' : null))}">
+                            <div th:if="${webUrl != null}" style="margin-top:10px; margin-bottom: 10px;">
+                                <a th:href="@{${webUrl}}" target="_blank" style="display:inline-block; padding:8px 15px; background:#00ff00; color:#000; text-decoration:none; font-weight:bold; border: 1px solid #000; box-shadow: 2px 2px 0 #004400;">
+                                    ⚡ 启动靶机 (Launch Instance)
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="flag-input-group">
+                            <input type="text" th:placeholder="${c.isSolved ? '[ SYSTEM: FLAG CAPTURED ]' : '请输入 FLAG{...}'}" th:id="'input-' + ${c.id}" autocomplete="off" 
+                                   th:disabled="${(c.isVip && (session.user == null || !session.user.isVip)) || c.isSolved}">
+                            <button th:onclick="'submitFlag(' + ${c.id} + ')'"
+                                    th:disabled="${(c.isVip && (session.user == null || !session.user.isVip)) || c.isSolved}"
+                                    th:text="${c.isSolved ? '已完成' : '提交'}">提交</button>
+                        </div>
+                        <div class="message" th:id="'msg-' + ${c.id}"></div>
                     </div>
-                    <div class="message" th:id="'msg-' + ${c.id}"></div>
                 </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" th:if="${totalPages > 1}">
+                <a th:if="${currentPage > 1}" th:href="@{/(page=${currentPage - 1})}">&laquo; 上一页</a>
+                
+                <th:block th:each="i : ${#numbers.sequence(1, totalPages)}">
+                    <a th:if="${currentPage != i}" th:href="@{/(page=${i})}" th:text="${i}">1</a>
+                    <span th:if="${currentPage == i}" th:text="${i}" class="current">1</span>
+                </th:block>
+                
+                <a th:if="${currentPage < totalPages}" th:href="@{/(page=${currentPage + 1})}">下一页 &raquo;</a>
             </div>
         </main>
 
         <!-- 右侧：排行榜与充值 -->
         <aside class="right-column">
             <div class="panel">
-                <h3>精英榜单</h3>
+                <h3>大师榜单</h3>
                 <table class="rank-table">
                     <thead>
                         <tr>
@@ -100,8 +136,17 @@
 
             <div class="panel recharge-box" style="margin-top: 30px;">
                 <h3>高级权限</h3>
-                <p style="font-size: 0.9em; color: #444;">升级为 VIP 以获取专属题目和双倍积分。</p>
-                <button class="btn-recharge" onclick="recharge()">升级 VIP (9.99 USD)</button>
+                <!-- 未登录或非 VIP 用户显示广告 -->
+                <div th:if="${session.user == null || !session.user.isVip}">
+                    <p style="font-size: 0.9em; color: #444;">升级为 VIP 以获取专属题目和双倍积分。</p>
+                    <button class="btn-recharge" onclick="recharge()">升级 VIP (0.01 USD)</button>
+                </div>
+                <!-- VIP 用户显示提示 -->
+                <div th:if="${session.user != null && session.user.isVip}">
+                    <p style="font-size: 0.9em; color: #28a745; font-weight: bold;">尊贵的 VIP 会员</p>
+                    <p style="font-size: 0.85em; color: #666; margin-top: 5px;">您已拥有所有高级题目访问权限。</p>
+                    <button class="btn-recharge" style="background-color: #6c757d; border-color: #6c757d; cursor: default;" disabled>已开通 VIP</button>
+                </div>
                 <div id="recharge-msg" class="message"></div>
             </div>
         </aside>
@@ -112,9 +157,14 @@
         <div class="modal-content">
             <span class="close" onclick="closeModal('loginModal')">&times;</span>
             <h3>系统登录</h3>
-            <input type="text" id="login-username" placeholder="用户名">
-            <input type="password" id="login-password" placeholder="密码">
-            <button class="btn-full" onclick="login()">认证</button>
+            <form onsubmit="event.preventDefault(); login();">
+                <input type="text" id="login-username" name="username" placeholder="用户名" autocomplete="username">
+                <input type="password" id="login-password" name="password" placeholder="密码" autocomplete="current-password">
+                <button type="submit" class="btn-full">认证</button>
+            </form>
+            <a href="/auth/login?provider=github" class="btn-github">
+                GitHub 登录
+            </a>
             <div id="login-msg" class="message"></div>
         </div>
     </div>
@@ -150,10 +200,10 @@
             
             <div class="panel" style="border: 1px solid #ccc; margin-bottom: 20px;">
                 <h4>发布新题目</h4>
-                <input type="text" id="admin-c-title" placeholder="标题">
-                <input type="text" id="admin-c-desc" placeholder="描述">
-                <input type="text" id="admin-c-flag" placeholder="Flag">
-                <input type="number" id="admin-c-points" placeholder="分数">
+                <input type="text" id="admin-c-title" placeholder="标题" autocomplete="off">
+                <input type="text" id="admin-c-desc" placeholder="描述" autocomplete="off">
+                <input type="text" id="admin-c-flag" placeholder="Flag" autocomplete="off">
+                <input type="number" id="admin-c-points" placeholder="分数" autocomplete="off">
                 <select id="admin-c-cat">
                     <option value="1">WEB</option>
                     <option value="2">PWN</option>
@@ -161,6 +211,7 @@
                     <option value="4">CRYPTO</option>
                     <option value="5">MISC</option>
                 </select>
+                <label><input type="checkbox" id="admin-c-isvip"> VIP 专属题目</label>
                 <input type="file" id="admin-c-file" style="margin-top: 10px; margin-bottom: 10px;">
                 <button onclick="addChallenge()">上传题目</button>
             </div>
@@ -175,6 +226,7 @@
                             <th>标题</th>
                             <th>分类</th>
                             <th>分数</th>
+                            <th>VIP</th>
                             <th>排序</th>
                             <th>操作</th>
                         </tr>
@@ -195,6 +247,7 @@
                             <th>用户名</th>
                             <th>角色</th>
                             <th>分数</th>
+                            <th>VIP</th>
                             <th>操作</th>
                         </tr>
                     </thead>
@@ -212,10 +265,10 @@
             <span class="close" onclick="closeModal('editChallengeModal')">&times;</span>
             <h3>编辑题目</h3>
             <input type="hidden" id="edit-c-id">
-            <input type="text" id="edit-c-title" placeholder="标题">
-            <input type="text" id="edit-c-desc" placeholder="描述">
-            <input type="text" id="edit-c-flag" placeholder="Flag">
-            <input type="number" id="edit-c-points" placeholder="分数">
+            <input type="text" id="edit-c-title" placeholder="标题" autocomplete="off">
+            <input type="text" id="edit-c-desc" placeholder="描述" autocomplete="off">
+            <input type="text" id="edit-c-flag" placeholder="Flag" autocomplete="off">
+            <input type="number" id="edit-c-points" placeholder="分数" autocomplete="off">
             <select id="edit-c-cat">
                 <option value="1">WEB</option>
                 <option value="2">PWN</option>
@@ -223,10 +276,41 @@
                 <option value="4">CRYPTO</option>
                 <option value="5">MISC</option>
             </select>
+            <label><input type="checkbox" id="edit-c-isvip"> VIP 专属题目</label>
+            <div id="edit-c-current-attachment" style="margin: 10px 0; font-size: 0.9em; color: #666;"></div>
+            <label style="display:block; margin-bottom:5px;"><input type="checkbox" id="edit-c-delete-attachment"> 删除当前附件</label>
+            <input type="file" id="edit-c-file" style="margin-top: 10px; margin-bottom: 10px;">
             <button class="btn-full" onclick="updateChallenge()">保存修改</button>
         </div>
     </div>
 
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content" style="text-align: center;">
+            <span class="close" onclick="closeModal('paymentModal')">&times;</span>
+            <h3>VIP 会员充值</h3>
+            <p>解锁所有高级题目，享受双倍积分！</p>
+            
+            <div id="payment-step-1">
+                <div class="plan-card" style="border: 2px solid #0070ba; border-radius: 8px; padding: 20px; margin: 20px 0; cursor: pointer; background-color: #f8f9fa;">
+                    <h4>永久 VIP</h4>
+                    <h2 style="color: #0070ba;">$ 0.01</h2>
+                    <p>PayPal 安全支付</p>
+                </div>
+                <!-- PayPal Button Container -->
+                <div id="paypal-button-container"></div>
+            </div>
+            
+            <div id="payment-result" style="display: none; margin-top: 20px;">
+                <p id="payment-message"></p>
+                <button class="btn-full" onclick="location.reload()" style="background-color: #0070ba; color: white;">刷新页面</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- App Logic (Loaded first to ensure UI works even if PayPal is slow) -->
     <script th:src="@{/js/app.js}"></script>
+
+    <!-- PayPal JS SDK (Loaded dynamically in app.js) -->
 </body>
 </html>
