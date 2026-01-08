@@ -21,6 +21,24 @@ public class ChallengeController {
     @Autowired
     private com.ctf.platform.mapper.UserMapper userMapper;
 
+    @Autowired
+    private com.ctf.platform.mapper.SubmissionMapper submissionMapper;
+
+    @GetMapping("/admin")
+    public String admin(Model model, jakarta.servlet.http.HttpSession session) {
+        com.ctf.platform.entity.User user = (com.ctf.platform.entity.User) session.getAttribute("user");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return "redirect:/";
+        }
+        
+        model.addAttribute("categories", challengeService.getAllCategories());
+        model.addAttribute("totalUsers", userMapper.count());
+        model.addAttribute("totalChallenges", challengeService.getTotalChallenges());
+        model.addAttribute("totalSubmissions", submissionMapper.count());
+        
+        return "admin";
+    }
+
     @GetMapping("/")
     public String index(Model model, jakarta.servlet.http.HttpSession session, @RequestParam(defaultValue = "1") int page) {
         com.ctf.platform.entity.User user = (com.ctf.platform.entity.User) session.getAttribute("user");
@@ -81,6 +99,7 @@ public class ChallengeController {
     @GetMapping("/api/challenges")
     @ResponseBody
     public Map<String, Object> getChallenges(@RequestParam(required = false) Integer categoryId, 
+                                             @RequestParam(required = false) String search,
                                              @RequestParam(defaultValue = "1") int page,
                                              @RequestParam(defaultValue = "5") int size,
                                              jakarta.servlet.http.HttpSession session) {
@@ -92,6 +111,9 @@ public class ChallengeController {
         if (categoryId != null) {
             challenges = challengeService.getChallengesByCategoryPage(categoryId, page, size);
             totalChallenges = challengeService.getTotalChallengesByCategory(categoryId);
+        } else if (search != null && !search.trim().isEmpty()) {
+            challenges = challengeService.getChallengesBySearchPage(search, page, size);
+            totalChallenges = challengeService.getTotalChallengesBySearch(search);
         } else {
             challenges = challengeService.getChallengesByPage(page, size);
             totalChallenges = challengeService.getTotalChallenges();

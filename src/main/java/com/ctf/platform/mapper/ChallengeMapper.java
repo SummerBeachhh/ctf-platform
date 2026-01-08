@@ -15,6 +15,10 @@ public interface ChallengeMapper {
     List<Challenge> findAll();
     int countAll();
     List<Challenge> findPage(@Param("offset") int offset, @Param("limit") int limit);
+    
+    int countBySearch(@Param("search") String search);
+    List<Challenge> findPageBySearch(@Param("search") String search, @Param("offset") int offset, @Param("limit") int limit);
+
     int countByCategoryId(Integer categoryId);
     List<Challenge> findPageByCategoryId(@Param("categoryId") Integer categoryId, @Param("offset") int offset, @Param("limit") int limit);
     List<Category> findAllCategories();

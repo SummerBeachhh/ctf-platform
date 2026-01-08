@@ -29,6 +29,11 @@ async function fetchAndRenderChallenges() {
         url += `&categoryId=${currentCategory}`;
     }
     
+    const searchInput = document.getElementById('search-input');
+    if (searchInput && searchInput.value.trim() !== '') {
+        url += `&search=${encodeURIComponent(searchInput.value.trim())}`;
+    }
+    
     try {
         const response = await fetch(url);
         const data = await response.json();
@@ -38,6 +43,24 @@ async function fetchAndRenderChallenges() {
         console.error("Failed to load challenges", e);
     }
 }
+
+function searchChallenges() {
+    currentPage = 1;
+    fetchAndRenderChallenges();
+}
+
+// Add enter key listener for search
+document.addEventListener('DOMContentLoaded', () => {
+    // ... existing initialization ...
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchChallenges();
+            }
+        });
+    }
+});
 
 function renderPagination(totalPages, currentPage) {
     let paginationEl = document.querySelector('.pagination');
@@ -275,7 +298,7 @@ async function checkLoginStatus() {
         html += `<a href="javascript:void(0)" onclick="openModal('profileModal')">个人档案</a>`;
         
         if (currentUser.role === 'ADMIN') {
-            html += `<a href="javascript:void(0)" onclick="openModal('adminModal')">管理后台</a>`;
+            html += `<a href="/admin">管理后台</a>`;
         }
         
         html += `<a href="javascript:void(0)" onclick="logout()">退出</a>`;
@@ -355,11 +378,8 @@ function updateProfileContent() {
 
 // Modal Logic
 function openModal(id) {
-    document.getElementById(id).style.display = "block";
-    if (id === 'adminModal') {
-        loadUsers();
-        loadChallenges();
-    }
+    const modal = document.getElementById(id);
+    if (modal) modal.style.display = "block";
 }
 
 function closeModal(id) {
@@ -372,279 +392,8 @@ window.onclick = function(event) {
     }
 }
 
-// Admin Logic
-async function loadUsers() {
-    const res = await fetch('/api/admin/users');
-    if (res.ok) {
-        const users = await res.json();
-        const tbody = document.getElementById('admin-user-list');
-        tbody.innerHTML = users.map(u => `
-            <tr>
-                <td>${u.id}</td>
-                <td>${u.username}</td>
-                <td>${u.role}</td>
-                <td>${u.score}</td>
-                <td>
-                    <button onclick="toggleUserVip(${u.id}, ${!u.isVip})" style="background-color: ${u.isVip ? '#28a745' : '#6c757d'}; border: none; padding: 5px 10px; color: white; border-radius: 4px; cursor: pointer;">
-                        ${u.isVip ? '已激活' : '未激活'}
-                    </button>
-                </td>
-                <td>
-                    <button class="btn-edit" onclick="openEditUserModal(${u.id})">编辑</button>
-                    <button class="btn-danger" onclick="deleteUser(${u.id})">删除</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-}
+// Admin Logic moved to admin.js
 
-async function toggleUserVip(id, isVip) {
-    const formData = new FormData();
-    formData.append('isVip', isVip);
-    
-    try {
-        const res = await fetch(`/api/admin/users/${id}/vip`, {
-            method: 'POST',
-            body: formData
-        });
-        const result = await res.json();
-        if (result.success) {
-            loadUsers(); 
-        } else {
-            alert('操作失败: ' + result.message);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('操作失败');
-    }
-}
-
-async function deleteUser(id) {
-    if(!confirm('确定要删除该用户吗？')) return;
-    await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
-    loadUsers();
-}
-
-async function openEditUserModal(id) {
-    const res = await fetch(`/api/admin/users/${id}`);
-    const result = await res.json();
-    
-    if (result.success) {
-        const u = result.data;
-        document.getElementById('edit-u-id').value = u.id;
-        document.getElementById('edit-u-username').value = u.username;
-        document.getElementById('edit-u-password').value = ''; // Don't show password
-        document.getElementById('edit-u-role').value = u.role;
-        document.getElementById('edit-u-score').value = u.score;
-        document.getElementById('edit-u-isvip').checked = u.isVip || false;
-        
-        openModal('editUserModal');
-    } else {
-        alert(result.message);
-    }
-}
-
-async function updateUser() {
-    const id = document.getElementById('edit-u-id').value;
-    const username = document.getElementById('edit-u-username').value;
-    const password = document.getElementById('edit-u-password').value;
-    const role = document.getElementById('edit-u-role').value;
-    const score = document.getElementById('edit-u-score').value;
-    const isVip = document.getElementById('edit-u-isvip').checked;
-    
-    const formData = new FormData();
-    formData.append('username', username);
-    formData.append('role', role);
-    formData.append('score', score);
-    formData.append('isVip', isVip);
-    
-    if (password) {
-        formData.append('password', password);
-    }
-    
-    try {
-        const response = await fetch(`/api/admin/users/${id}`, {
-            method: 'POST',
-            body: formData
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-            alert('用户更新成功！');
-            closeModal('editUserModal');
-            loadUsers();
-        } else {
-            alert('用户更新失败: ' + result.message);
-        }
-    } catch (error) {
-        console.error('Update error:', error);
-        alert('更新失败，请检查网络。');
-    }
-}
-
-async function loadChallenges() {
-    const res = await fetch('/api/challenges?size=1000'); // Load many for admin
-    if (res.ok) {
-        const data = await res.json();
-        const challenges = data.challenges || data; // Handle Map or List
-        const tbody = document.getElementById('admin-challenge-list');
-        tbody.innerHTML = challenges.map(c => `
-            <tr>
-                <td>${c.id}</td>
-                <td>${c.title}</td>
-                <td>${c.categoryName || c.categoryId}</td>
-                <td>${c.points}</td>
-                <td>${c.isVip ? '✅' : '❌'}</td>
-                <td>
-                    <input type="number" value="${c.sortOrder || 0}" style="width: 60px; padding: 2px;" 
-                           onchange="updateSortOrder(${c.id}, this.value)">
-                </td>
-                <td>
-                    <button class="btn-edit" onclick="openEditModal(${c.id})">编辑</button>
-                    <button class="btn-danger" onclick="deleteChallenge(${c.id})">删除</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-}
-
-async function openEditModal(id) {
-    const res = await fetch(`/api/admin/challenges/${id}`);
-    const result = await res.json();
-    
-    if (result.success) {
-        const c = result.data;
-        document.getElementById('edit-c-id').value = c.id;
-        document.getElementById('edit-c-title').value = c.title;
-        document.getElementById('edit-c-desc').value = c.description;
-        document.getElementById('edit-c-flag').value = c.flag;
-        document.getElementById('edit-c-points').value = c.points;
-        document.getElementById('edit-c-cat').value = c.categoryId;
-        document.getElementById('edit-c-isvip').checked = c.isVip || false;
-        
-        const attachmentDiv = document.getElementById('edit-c-current-attachment');
-        const deleteCheckbox = document.getElementById('edit-c-delete-attachment');
-        const fileInput = document.getElementById('edit-c-file');
-        
-        fileInput.value = '';
-        deleteCheckbox.checked = false;
-        
-        if (c.attachmentUrl) {
-            const fileName = c.attachmentUrl.split('/').pop();
-            attachmentDiv.innerHTML = `当前附件: <a href="${c.attachmentUrl}" target="_blank">${fileName}</a>`;
-            deleteCheckbox.parentElement.style.display = 'block';
-        } else {
-            attachmentDiv.innerHTML = '当前无附件';
-            deleteCheckbox.parentElement.style.display = 'none';
-        }
-        
-        openModal('editChallengeModal');
-    } else {
-        alert(result.message);
-    }
-}
-
-async function updateChallenge() {
-    const id = document.getElementById('edit-c-id').value;
-    const title = document.getElementById('edit-c-title').value;
-    const description = document.getElementById('edit-c-desc').value;
-    const flag = document.getElementById('edit-c-flag').value;
-    const points = document.getElementById('edit-c-points').value;
-    const categoryId = document.getElementById('edit-c-cat').value;
-    const isVip = document.getElementById('edit-c-isvip').checked;
-    
-    const deleteAttachment = document.getElementById('edit-c-delete-attachment').checked;
-    const fileInput = document.getElementById('edit-c-file');
-    
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('description', description);
-    formData.append('flag', flag);
-    formData.append('points', points);
-    formData.append('categoryId', categoryId);
-    formData.append('isVip', isVip);
-    formData.append('deleteAttachment', deleteAttachment);
-    
-    if (fileInput.files.length > 0) {
-        formData.append('file', fileInput.files[0]);
-    }
-    
-    try {
-        const response = await fetch(`/api/admin/challenges/${id}`, {
-            method: 'POST',
-            body: formData
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-            alert('题目更新成功！');
-            closeModal('editChallengeModal');
-            loadChallenges();
-        } else {
-            alert('题目更新失败: ' + result.message);
-        }
-    } catch (error) {
-        console.error('Update error:', error);
-        alert('更新失败，请检查网络。');
-    }
-}
-
-async function updateSortOrder(id, sortOrder) {
-    const formData = new FormData();
-    formData.append('sortOrder', sortOrder);
-    await fetch(`/api/admin/challenges/${id}/sort`, {
-        method: 'POST',
-        body: formData
-    });
-}
-
-async function deleteChallenge(id) {
-    if(!confirm('确定要删除该题目吗？')) return;
-    await fetch(`/api/admin/challenges/${id}`, { method: 'DELETE' });
-    loadChallenges();
-    // Also refresh the main challenge list if needed, but page reload is simple
-    // window.location.reload(); 
-}
-
-async function addChallenge() {
-    const title = document.getElementById('admin-c-title').value;
-    const description = document.getElementById('admin-c-desc').value;
-    const flag = document.getElementById('admin-c-flag').value;
-    const points = document.getElementById('admin-c-points').value;
-    const categoryId = document.getElementById('admin-c-cat').value;
-    const isVip = document.getElementById('admin-c-isvip').checked;
-    const fileInput = document.getElementById('admin-c-file');
-    
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('description', description);
-    formData.append('flag', flag);
-    formData.append('points', points);
-    formData.append('categoryId', categoryId);
-    formData.append('isVip', isVip);
-    
-    if (fileInput.files.length > 0) {
-        formData.append('file', fileInput.files[0]);
-    }
-    
-    try {
-        const response = await fetch('/api/admin/challenges', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-            alert('题目添加成功！');
-            window.location.reload();
-        } else {
-            alert('题目添加失败: ' + result.message);
-        }
-    } catch (error) {
-        console.error('Upload error:', error);
-        alert('上传失败，请检查网络或文件大小是否超出服务器限制。');
-    }
-}
 
 // Existing Logic
 async function submitFlag(id) {

@@ -42,6 +42,17 @@ public class ChallengeServiceImpl implements ChallengeService {
     }
 
     @Override
+    public List<Challenge> getChallengesBySearchPage(String search, int page, int size) {
+        int offset = (page - 1) * size;
+        return challengeMapper.findPageBySearch(search, offset, size);
+    }
+
+    @Override
+    public int getTotalChallengesBySearch(String search) {
+        return challengeMapper.countBySearch(search);
+    }
+
+    @Override
     public List<Challenge> getChallengesByCategoryPage(int categoryId, int page, int size) {
         int offset = (page - 1) * size;
         return challengeMapper.findPageByCategoryId(categoryId, offset, size);

@@ -21,6 +21,19 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
+    <select id="countBySearch" resultType="int">
+        SELECT count(*) FROM challenge WHERE title LIKE CONCAT('%', #{search}, '%')
+    </select>
+
+    <select id="findPageBySearch" resultType="com.ctf.platform.entity.Challenge">
+        SELECT c.*, cat.name as categoryName 
+        FROM challenge c 
+        LEFT JOIN category cat ON c.category_id = cat.id
+        WHERE c.title LIKE CONCAT('%', #{search}, '%')
+        ORDER BY c.sort_order DESC, c.id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
     <select id="countByCategoryId" resultType="int">
         SELECT count(*) FROM challenge WHERE category_id = #{categoryId}
     </select>

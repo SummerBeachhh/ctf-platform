@@ -556,3 +556,34 @@ button:disabled {
     color: white;
     cursor: default;
 }
+
+/* Sticky Column */
+.sticky-column {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 20px;
+    align-self: start;
+    height: auto;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+/* Search Box */
+.search-panel input {
+    border: 2px solid #1a1a1a;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 1em;
+}
+
+.search-panel button {
+    background: #1a1a1a;
+    color: white;
+    border: 2px solid #1a1a1a;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.search-panel button:hover {
+    background: #333;
+}

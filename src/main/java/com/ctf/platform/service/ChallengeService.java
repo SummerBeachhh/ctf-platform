@@ -8,6 +8,8 @@ public interface ChallengeService {
     List<Challenge> getAllChallenges();
     List<Challenge> getChallengesByPage(int page, int size);
     int getTotalChallenges();
+    List<Challenge> getChallengesBySearchPage(String search, int page, int size);
+    int getTotalChallengesBySearch(String search);
     List<Challenge> getChallengesByCategoryPage(int categoryId, int page, int size);
     int getTotalChallengesByCategory(int categoryId);
     List<Category> getAllCategories();

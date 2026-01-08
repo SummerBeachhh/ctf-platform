@@ -18,4 +18,7 @@ public interface SubmissionMapper {
 
     @Select("SELECT DISTINCT challenge_id FROM submission WHERE user_id = #{userId} AND is_correct = TRUE")
     List<Integer> findSolvedChallengeIdsByUserId(Integer userId);
+
+    @Select("SELECT COUNT(*) FROM submission")
+    int count();
 }

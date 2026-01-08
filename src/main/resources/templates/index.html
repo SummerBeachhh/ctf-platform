@@ -18,7 +18,15 @@
 
     <div class="container">
         <!-- 左侧：分类与登录 -->
-        <aside class="left-column">
+        <aside class="left-column sticky-column">
+            <div class="panel search-panel" style="margin-bottom: 20px;">
+                <h3>题目搜索</h3>
+                <div class="search-box" style="display: flex; gap: 5px;">
+                    <input type="text" id="search-input" placeholder="输入关键词..." style="margin-bottom: 0;">
+                    <button onclick="searchChallenges()" style="padding: 0 15px;">🔍</button>
+                </div>
+            </div>
+
             <div class="panel">
                 <h3>题目分类</h3>
                 <ul class="category-list">
@@ -110,7 +118,7 @@
         </main>
 
         <!-- 右侧：排行榜与充值 -->
-        <aside class="right-column">
+        <aside class="right-column sticky-column">
             <div class="panel">
                 <h3>大师榜单</h3>
                 <table class="rank-table">
@@ -188,73 +196,6 @@
             <h3>操作员档案</h3>
             <div id="profile-content">
                 <!-- Filled by JS -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Admin Modal -->
-    <div id="adminModal" class="modal">
-        <div class="modal-content" style="width: 80%; max-width: 1000px;">
-            <span class="close" onclick="closeModal('adminModal')">&times;</span>
-            <h3>管理控制台</h3>
-            
-            <div class="panel" style="border: 1px solid #ccc; margin-bottom: 20px;">
-                <h4>发布新题目</h4>
-                <input type="text" id="admin-c-title" placeholder="标题" autocomplete="off">
-                <input type="text" id="admin-c-desc" placeholder="描述" autocomplete="off">
-                <input type="text" id="admin-c-flag" placeholder="Flag" autocomplete="off">
-                <input type="number" id="admin-c-points" placeholder="分数" autocomplete="off">
-                <select id="admin-c-cat">
-                    <option value="1">WEB</option>
-                    <option value="2">PWN</option>
-                    <option value="3">REVERSE</option>
-                    <option value="4">CRYPTO</option>
-                    <option value="5">MISC</option>
-                </select>
-                <label><input type="checkbox" id="admin-c-isvip"> VIP 专属题目</label>
-                <input type="file" id="admin-c-file" style="margin-top: 10px; margin-bottom: 10px;">
-                <button onclick="addChallenge()">上传题目</button>
-            </div>
-
-            <div class="panel" style="border: 1px solid #ccc; margin-bottom: 20px;">
-                <h4>题目管理</h4>
-                <button onclick="loadChallenges()">刷新题目列表</button>
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>标题</th>
-                            <th>分类</th>
-                            <th>分数</th>
-                            <th>VIP</th>
-                            <th>排序</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-challenge-list">
-                        <!-- Filled by JS -->
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="panel" style="border: 1px solid #ccc;">
-                <h4>用户管理</h4>
-                <button onclick="loadUsers()">刷新用户列表</button>
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>用户名</th>
-                            <th>角色</th>
-                            <th>分数</th>
-                            <th>VIP</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-user-list">
-                        <!-- Filled by JS -->
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
