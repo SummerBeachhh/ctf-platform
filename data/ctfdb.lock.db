@@ -1,0 +1,6 @@
+#FileLock
+#Thu Jan 08 17:24:02 CST 2026
+hostName=MAGI
+id=19b9ceb90e063b743804a910885dcb41f3e5e213983
+method=file
+server=192.168.101.116\:54665

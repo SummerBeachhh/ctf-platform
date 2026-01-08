@@ -1,0 +1,341 @@
+/* 全局样式：强制无圆角 */
+* {
+    border-radius: 0 !important;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f0f0; /* 恢复浅灰色背景 */
+    margin: 0;
+    padding: 0;
+    color: #333; /* 恢复深色文字 */
+    font-size: 18px; /* 保持放大字体 */
+}
+
+header {
+    background-color: #1a1a1a;
+    color: white; /* 恢复白色文字 */
+    padding: 40px 20px;
+    text-align: center;
+    border-bottom: 6px solid #007bff;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    position: relative;
+}
+
+.user-controls {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.user-controls a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    padding: 5px 10px;
+    border: 1px solid white;
+}
+
+.user-controls a:hover {
+    background: white;
+    color: #1a1a1a;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 30px auto;
+    padding: 0 30px;
+    display: grid;
+    grid-template-columns: 300px 1fr 350px;
+    gap: 30px;
+}
+
+/* 通用面板样式 */
+.panel {
+    background: white; /* 恢复白色面板 */
+    border: 3px solid #1a1a1a; /* 恢复深色边框 */
+    padding: 25px;
+}
+
+.panel h3 {
+    margin-top: 0;
+    border-bottom: 3px solid #eee;
+    padding-bottom: 15px;
+    color: #1a1a1a;
+    font-size: 1.5em;
+}
+
+/* 侧边栏分类 */
+.category-list {
+    list-style: none;
+    padding: 0;
+}
+
+.category-item {
+    padding: 15px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+    transition: all 0.2s;
+}
+
+.category-item:hover {
+    background-color: #e9ecef;
+    border-color: #ddd;
+}
+
+.category-item.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #1a1a1a;
+}
+
+/* 题目列表 */
+.challenge-card {
+    background: white;
+    border: 3px solid #1a1a1a;
+    margin-bottom: 30px;
+    padding: 30px;
+}
+
+.challenge-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.challenge-title {
+    font-size: 1.6em;
+    font-weight: bold;
+    margin: 0;
+    color: #1a1a1a;
+}
+
+.points-badge {
+    background: #1a1a1a;
+    color: white;
+    padding: 5px 15px;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.flag-input-group {
+    display: flex;
+    margin-top: 25px;
+    align-items: stretch; /* Ensure equal height */
+}
+
+.flag-input-group input[type="text"] {
+    margin-bottom: 0; /* Remove default margin to align with button */
+    flex: 1;
+}
+
+input[type="text"], input[type="password"], input[type="number"], textarea, select {
+    width: 100%;
+    padding: 15px;
+    background: white;
+    color: #333;
+    border: 3px solid #1a1a1a;
+    outline: none;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 0 30px; /* Use 0 vertical padding and let flex center it, or match input padding */
+    background-color: #007bff;
+    color: white;
+    border: 3px solid #1a1a1a;
+    border-left: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Height will be determined by the flex container stretching to match input */
+}
+
+.btn-full {
+    width: 100%;
+    border-left: 3px solid #1a1a1a;
+    padding: 15px 30px; /* Restore padding for non-flex buttons */
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* 排行榜 */
+.rank-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.rank-table td, .rank-table th {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+.vip-tag {
+    background: #ffc107;
+    color: #000;
+    font-size: 0.7em;
+    padding: 2px 5px;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* 登录与充值 */
+.auth-box, .recharge-box {
+    margin-top: 20px;
+}
+
+.btn-oauth {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 10px;
+    text-align: center;
+    background: #f8f9fa;
+    color: #333;
+    text-decoration: none;
+    border: 2px solid #1a1a1a;
+    font-weight: bold;
+}
+
+.btn-oauth:hover {
+    background: #e9ecef;
+    border-color: #007bff;
+}
+
+.btn-recharge {
+    background: #28a745;
+    border: 2px solid #1a1a1a;
+    width: 100%;
+    margin-top: 10px;
+    color: white;
+    border-left: 2px solid #1a1a1a;
+    padding: 15px; /* Restore padding */
+}
+
+.message {
+    margin-top: 15px;
+    padding: 15px;
+    display: none;
+    font-weight: bold;
+}
+
+.message.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
+.message.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 30px;
+    border: 5px solid #007bff;
+    width: 50%;
+    max-width: 600px;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: red;
+}
+
+/* Admin Styles */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.admin-table th, .admin-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.admin-table th {
+    background-color: #f2f2f2;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    padding: 5px 10px;
+    font-size: 0.9em;
+    border: 1px solid #1a1a1a;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* 附件样式 */
+.attachment-box {
+    margin: 15px 0;
+    padding: 10px;
+    border: 2px dashed #1a1a1a;
+    background: #f8f9fa;
+    display: inline-block;
+}
+
+.attachment-thumb {
+    max-width: 200px;
+    max-height: 200px;
+    display: block;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.attachment-thumb:hover {
+    transform: scale(1.02);
+    border-color: #007bff;
+}
+
+.attachment-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.attachment-link:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
