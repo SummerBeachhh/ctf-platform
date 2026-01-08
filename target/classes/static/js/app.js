@@ -226,10 +226,61 @@ async function loadChallenges() {
                            onchange="updateSortOrder(${c.id}, this.value)">
                 </td>
                 <td>
+                    <button class="btn-edit" onclick="openEditModal(${c.id})">编辑</button>
                     <button class="btn-danger" onclick="deleteChallenge(${c.id})">删除</button>
                 </td>
             </tr>
         `).join('');
+    }
+}
+
+async function openEditModal(id) {
+    const res = await fetch(`/api/admin/challenges/${id}`);
+    const result = await res.json();
+    
+    if (result.success) {
+        const c = result.data;
+        document.getElementById('edit-c-id').value = c.id;
+        document.getElementById('edit-c-title').value = c.title;
+        document.getElementById('edit-c-desc').value = c.description;
+        document.getElementById('edit-c-flag').value = c.flag;
+        document.getElementById('edit-c-points').value = c.points;
+        document.getElementById('edit-c-cat').value = c.categoryId;
+        
+        openModal('editChallengeModal');
+    } else {
+        alert(result.message);
+    }
+}
+
+async function updateChallenge() {
+    const id = document.getElementById('edit-c-id').value;
+    const title = document.getElementById('edit-c-title').value;
+    const description = document.getElementById('edit-c-desc').value;
+    const flag = document.getElementById('edit-c-flag').value;
+    const points = document.getElementById('edit-c-points').value;
+    const categoryId = document.getElementById('edit-c-cat').value;
+    
+    try {
+        const response = await fetch(`/api/admin/challenges/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title, description, flag, points, categoryId
+            })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            alert('题目更新成功！');
+            closeModal('editChallengeModal');
+            loadChallenges();
+        } else {
+            alert('题目更新失败: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Update error:', error);
+        alert('更新失败，请检查网络。');
     }
 }
 

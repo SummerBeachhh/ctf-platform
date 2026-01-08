@@ -38,11 +38,15 @@ header {
     margin-left: 20px;
     padding: 5px 10px;
     border: 1px solid white;
+    transition: all 0.2s;
+    display: inline-block;
 }
 
 .user-controls a:hover {
     background: white;
     color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0 #000;
 }
 
 .container {
@@ -87,6 +91,8 @@ header {
 .category-item:hover {
     background-color: #e9ecef;
     border-color: #ddd;
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0 #000;
 }
 
 .category-item.active {
@@ -164,6 +170,7 @@ button {
     align-items: center;
     justify-content: center;
     /* Height will be determined by the flex container stretching to match input */
+    transition: all 0.2s;
 }
 
 .btn-full {
@@ -174,6 +181,8 @@ button {
 
 button:hover {
     background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0 #000;
 }
 
 /* 排行榜 */
@@ -213,11 +222,14 @@ button:hover {
     text-decoration: none;
     border: 2px solid #1a1a1a;
     font-weight: bold;
+    transition: all 0.2s;
 }
 
 .btn-oauth:hover {
     background: #e9ecef;
     border-color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0 #000;
 }
 
 .btn-recharge {
@@ -228,6 +240,10 @@ button:hover {
     color: white;
     border-left: 2px solid #1a1a1a;
     padding: 15px; /* Restore padding */
+}
+
+.btn-recharge:hover {
+    background-color: #218838;
 }
 
 .message {
@@ -293,15 +309,39 @@ button:hover {
     background-color: #f2f2f2;
 }
 
-.btn-danger {
-    background-color: #dc3545;
-    padding: 5px 10px;
-    font-size: 0.9em;
-    border: 1px solid #1a1a1a;
+/* 表格内操作按钮专用样式 */
+.admin-table button {
+    display: inline-block;
+    width: auto;
+    padding: 6px 15px;
+    font-size: 14px;
+    border: 2px solid #1a1a1a !important; /* 强制覆盖全局无左边框 */
+    margin: 0 4px;
+    line-height: 1.5;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
 }
 
+.btn-edit {
+    background-color: #007bff;
+}
+.btn-edit:hover {
+    background-color: #0069d9;
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0 #000;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+}
 .btn-danger:hover {
     background-color: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0 #000;
 }
 
 /* 附件样式 */

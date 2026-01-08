@@ -293,15 +293,39 @@ button:hover {
     background-color: #f2f2f2;
 }
 
-.btn-danger {
-    background-color: #dc3545;
-    padding: 5px 10px;
-    font-size: 0.9em;
-    border: 1px solid #1a1a1a;
+/* 表格内操作按钮专用样式 */
+.admin-table button {
+    display: inline-block;
+    width: auto;
+    padding: 6px 15px;
+    font-size: 14px;
+    border: 2px solid #1a1a1a !important; /* 强制覆盖全局无左边框 */
+    margin: 0 4px;
+    line-height: 1.5;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
 }
 
+.btn-edit {
+    background-color: #007bff;
+}
+.btn-edit:hover {
+    background-color: #0069d9;
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0 #000;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+}
 .btn-danger:hover {
     background-color: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0 #000;
 }
 
 /* 附件样式 */

@@ -226,7 +226,7 @@ async function loadChallenges() {
                            onchange="updateSortOrder(${c.id}, this.value)">
                 </td>
                 <td>
-                    <button onclick="openEditModal(${c.id})">编辑</button>
+                    <button class="btn-edit" onclick="openEditModal(${c.id})">编辑</button>
                     <button class="btn-danger" onclick="deleteChallenge(${c.id})">删除</button>
                 </td>
             </tr>
